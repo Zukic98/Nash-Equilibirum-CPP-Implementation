@@ -7,7 +7,7 @@
 #include <utility>
 #include <algorithm>
 #include <chrono>
-#define DIMENSION 20000
+#define DIMENSION 10000
 
 struct PairHash {
     template <class T1, class T2>

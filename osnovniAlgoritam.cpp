@@ -7,7 +7,7 @@
 #include <utility>
 #include <algorithm>
 #include <chrono>
-#define DIMENSION 5000
+#define DIMENSION 10000
 
 typedef std::deque<std::deque<int>> Matrix;
 
