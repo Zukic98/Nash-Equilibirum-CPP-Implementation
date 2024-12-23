@@ -2,7 +2,7 @@ directory = .bin
 files = bimatrixEquilibrium osnovniAlgoritam
 
 clean:
-	@rm -rf ./$(directory)/
+	@rm -rf ./$(directory)/*
 
 prep_dir:
 	@mkdir -p ./$(directory)
