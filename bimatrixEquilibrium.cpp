@@ -1,97 +1,98 @@
-#include <iostream>
-#include <deque>
-#include <limits>
-#include <unordered_set>
-#include <ctime>
-#include <iomanip>
-#include <utility>
 #include <algorithm>
 #include <chrono>
-#define DIMENSION 10000
+#include <ctime>
+#include <deque>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <unordered_set>
+#include <utility>
+#define DIMENSION 5000
 
 struct PairHash {
-    template <class T1, class T2>
-    std::size_t operator()(const std::pair<T1, T2>& p) const {
-        auto h1 = std::hash<T1>{}(p.first);
-        auto h2 = std::hash<T2>{}(p.second);
-        return h1 ^ h2;
-    }
+  template <class T1, class T2>
+  std::size_t operator()(const std::pair<T1, T2> &p) const {
+    auto h1 = std::hash<T1>{}(p.first);
+    auto h2 = std::hash<T2>{}(p.second);
+    return h1 ^ h2;
+  }
 };
 
-std::unordered_set<std::pair<int, int>, PairHash> findNashEquilibirum(int *matrix1, int *matrix2, int dimension){
-    
-    std::unordered_set<std::pair<int,int>,PairHash> global_best_of_column, global_best_of_row;
-    std::unordered_set<std::pair<int,int>,PairHash> intersection;
+std::unordered_set<std::pair<int, int>, PairHash>
+findNashEquilibirum(int *matrix1, int *matrix2, int dimension) {
 
-    for(int i=0; i < dimension; i++){
+  std::unordered_set<std::pair<int, int>, PairHash> global_best_of_column,
+      global_best_of_row;
+  std::unordered_set<std::pair<int, int>, PairHash> intersection;
 
-        int maximumColumnValue = -std::numeric_limits<int>::max();
-        int maximumRowValue = -std::numeric_limits<int>::max();
+  for (int i = 0; i < dimension; i++) {
 
-        std::unordered_set<std::pair<int,int>, PairHash> best_of_column, best_of_row;
+    int maximumColumnValue = -std::numeric_limits<int>::max();
+    int maximumRowValue = -std::numeric_limits<int>::max();
 
-        for(int j=0; j < dimension; j++){
-            
-            if(matrix1[j*dimension + i] > maximumColumnValue){
-                
-                best_of_column.clear();
+    std::unordered_set<std::pair<int, int>, PairHash> best_of_column,
+        best_of_row;
 
-                maximumColumnValue = matrix1[j*dimension + i];
+    for (int j = 0; j < dimension; j++) {
 
-                best_of_column.insert({j,i});
+      if (matrix1[j * dimension + i] > maximumColumnValue) {
 
-            }else if(matrix1[j*dimension + i] == maximumColumnValue){
-                
-                best_of_column.insert({j,i});
+        best_of_column.clear();
 
-            }
+        maximumColumnValue = matrix1[j * dimension + i];
 
-            if(matrix2[i*dimension +j] > maximumRowValue){
-                
-                best_of_row.clear();
+        best_of_column.insert({j, i});
 
-                maximumRowValue = matrix2[i*dimension +j];
+      } else if (matrix1[j * dimension + i] == maximumColumnValue) {
 
-                best_of_row.insert({i,j});
+        best_of_column.insert({j, i});
+      }
 
-            }else if(matrix2[i*dimension +j] == maximumRowValue){
-                
-                best_of_row.insert({i,j});
+      if (matrix2[i * dimension + j] > maximumRowValue) {
 
-            }
-        }
+        best_of_row.clear();
 
-        global_best_of_column.insert(best_of_column.begin(),best_of_column.end());
-        global_best_of_row.insert(best_of_row.begin(),best_of_row.end());
+        maximumRowValue = matrix2[i * dimension + j];
 
-    }
-    
-    if(global_best_of_column.size() > global_best_of_row.size()){
-        for (auto element : global_best_of_row) {
-            // If insertion is successful, the element exists in both sets
-            if (global_best_of_column.insert(element).second == false) {
-                intersection.insert(element);
-            }
-        }
-    }else{
-        for (auto element : global_best_of_column) {
-            // If insertion is successful, the element exists in both sets
-            if (global_best_of_row.insert(element).second == false) {
-                intersection.insert(element);
-            }
-        }
+        best_of_row.insert({i, j});
+
+      } else if (matrix2[i * dimension + j] == maximumRowValue) {
+
+        best_of_row.insert({i, j});
+      }
     }
 
-    return intersection;
+    global_best_of_column.insert(best_of_column.begin(), best_of_column.end());
+    global_best_of_row.insert(best_of_row.begin(), best_of_row.end());
+  }
+
+  if (global_best_of_column.size() > global_best_of_row.size()) {
+    for (auto element : global_best_of_row) {
+      // If insertion is successful, the element exists in both sets
+      if (global_best_of_column.insert(element).second == false) {
+        intersection.insert(element);
+      }
+    }
+  } else {
+    for (auto element : global_best_of_column) {
+      // If insertion is successful, the element exists in both sets
+      if (global_best_of_row.insert(element).second == false) {
+        intersection.insert(element);
+      }
+    }
+  }
+
+  return intersection;
 }
 /*
-std::unordered_set<std::pair<int, int>, PairHash> getPositionsWithBiggestValues(int dimension){
-    int min_value = 0;
-    int max_value = dimension;
-    
+std::unordered_set<std::pair<int, int>, PairHash>
+getPositionsWithBiggestValues(int dimension){ int min_value = 0; int max_value =
+dimension;
+
     std::unordered_set<std::pair<int, int>, PairHash> indicesOfEquilibirum;
-    
-    int numberOfRandomNumbers( min_value + rand() % (max_value - min_value + 1) );
+
+    int numberOfRandomNumbers( min_value + rand() % (max_value - min_value + 1)
+);
 
     std::cout<<"Indices of equilibrium: "<<std::endl;
 
@@ -105,84 +106,90 @@ std::unordered_set<std::pair<int, int>, PairHash> getPositionsWithBiggestValues(
     return indicesOfEquilibirum;
 }
 
-std::unordered_set<std::pair<int, int>, PairHash> indicesOfEquilibirum(getPositionsWithBiggestValues(DIMENSION));
+std::unordered_set<std::pair<int, int>, PairHash>
+indicesOfEquilibirum(getPositionsWithBiggestValues(DIMENSION));
 */
-/*bool compareIndices(int i, int j, std::unordered_set<std::pair<int, int>, PairHash> &indices){
-    
-    for (auto index : indices) 
+/*bool compareIndices(int i, int j, std::unordered_set<std::pair<int, int>,
+PairHash> &indices){
+
+    for (auto index : indices)
         if(i == index.first && j == index.second)
             return true;
 
     return false;
 }*/
 
-int* generateMatrix(int dimension){
+int *generateMatrix(int dimension) {
 
-    int *matrix = nullptr;
+  int *matrix = nullptr;
 
-    try{
-        matrix = new int[dimension*dimension];
-    }catch(std::bad_alloc){
-        std::cout<<"Alokacija pala";
-        delete[] matrix;
-        exit(0);
-    }
-    // Define the minimum and maximum values for the random number range
-    int min_value = 0;
-    int max_value = 100;
+  try {
+    matrix = new int[dimension * dimension];
+  } catch (std::bad_alloc) {
+    std::cout << "Alokacija pala";
+    delete[] matrix;
+    exit(0);
+  }
+  // Define the minimum and maximum values for the random number range
+  int min_value = 0;
+  int max_value = 100;
 
-    //indicesOfEquilibirum(getPositionsWithBiggestValues(dimension));
+  // indicesOfEquilibirum(getPositionsWithBiggestValues(dimension));
 
-    for(int i=0; i<dimension; i++)
-        for(int j=0; j<dimension; j++)
-            matrix[i * dimension + j ] = min_value + rand() % (max_value - min_value + 1);
+  for (int i = 0; i < dimension; i++)
+    for (int j = 0; j < dimension; j++)
+      matrix[i * dimension + j] =
+          min_value + rand() % (max_value - min_value + 1);
 
-    return matrix;
-
+  return matrix;
 }
 
-void printMatrix(int *matrix, int dimension){
-    
-    for(int i=0; i < dimension; i++){
-        
-        for(int j=0; j < dimension; j++)
-            std::cout<<std::setw(3)<< matrix[i*dimension + j]<<" ";
-        
-        std::cout<<std::endl;
-    }
+void printMatrix(int *matrix, int dimension) {
+
+  for (int i = 0; i < dimension; i++) {
+
+    for (int j = 0; j < dimension; j++)
+      std::cout << std::setw(3) << matrix[i * dimension + j] << " ";
+
+    std::cout << std::endl;
+  }
 }
 
-int main(){
+int main() {
 
-    int dimension(DIMENSION);
+  int dimension(DIMENSION);
 
-    srand(time(NULL));
-    
-    int *matrix1(generateMatrix(dimension));
-    std::cout<<"Matrix 1: "<<std::endl;
-    //printMatrix(matrix1,dimension);
+  srand(time(NULL));
 
-    std::cout<<"Matrix 2: "<<std::endl;
-    int *matrix2(generateMatrix(dimension));
-    //printMatrix(matrix2,dimension);
-    
-    std::cout<<"Equilibrium: "<<std::endl;
+  int *matrix1(generateMatrix(dimension));
+  /*std::cout << "Matrix 1: " << std::endl;*/
+  // printMatrix(matrix1,dimension);
 
-    auto start = std::chrono::high_resolution_clock::now();
+  int *matrix2(generateMatrix(dimension));
+  /*std::cout << "Matrix 2: " << std::endl;*/
+  // printMatrix(matrix2,dimension);
 
-    auto equilibrium(findNashEquilibirum(matrix1, matrix2,dimension));
+  /*std::cout << "Equilibrium: " << std::endl;*/
 
-    auto end = std::chrono::high_resolution_clock::now();
+  auto start = std::chrono::high_resolution_clock::now();
 
-    std::cout<< "Execution time of Nash equilibrium: "
-        <<std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+  auto equilibrium(findNashEquilibirum(matrix1, matrix2, dimension));
 
-    /*for(auto index : equilibrium){
-        std::cout<<"i: "<<index.first<<" j:"<<index.second<<"."<<std::endl;
-    }*/
+  auto end = std::chrono::high_resolution_clock::now();
 
-    delete[] matrix1;
-    delete[] matrix2;
+  std::cout << "Execution time of Nash equilibrium with " << dimension
+            << " size: "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end -
+                                                                     start)
+                   .count()
+            << " ms" << std::endl;
 
-    return 0;
+  /*for(auto index : equilibrium){
+      std::cout<<"i: "<<index.first<<" j:"<<index.second<<"."<<std::endl;
+  }*/
+
+  delete[] matrix1;
+  delete[] matrix2;
+
+  return 0;
 }
