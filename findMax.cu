@@ -1,8 +1,15 @@
+
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+
+#include <stdio.h>
+
 #include <chrono>
 #include <random>
-#include <cuda_runtime.h>
+#include <iostream>
 
-__device__ float warpReduceMax(int val)
+/*
+__device__ float warpReduceMax(float val)
 {
     const unsigned int FULL_MASK = 0xffffffff;
 
@@ -57,73 +64,79 @@ __global__ void reduceMaxIdxOptimizedWarp(const int* __restrict__ input, const i
         maxOut[warpIdx] = warpMax;
         maxIdxOut[warpIdx] = warpMaxIdx;
     }
-}
-
+}*/
 
 int main() {
-    const int size = 10;
-    int *h_input, *h_maxOut, *h_maxIdxOut;
-    int *d_input, *d_maxOut, *d_maxIdxOut;
-    int warpSize = 32;
+    // Define the size of the input array
+    const int size = 1024;
 
-    // Allocate host memory
-    h_input = (int*)malloc(size * sizeof(int));
-    h_maxOut = (int*)malloc(ceil(size / (float)warpSize) * sizeof(int));
-    h_maxIdxOut = (int*)malloc(ceil(size / (float)warpSize) * sizeof(int));
+    // Allocate host memory for input, output max, and output max index
+    int* h_input;
+    int* h_maxOut;
+    int* h_maxIdxOut;
+    cudaMallocHost((void**)&h_input, size * sizeof(int));
+    cudaMallocHost((void**)&h_maxOut, gridDim.x * sizeof(int));
+    cudaMallocHost((void**)&h_maxIdxOut, gridDim.x * sizeof(int));
 
-    // Initialize host data with some example values
+    // Initialize input data (replace with your actual data)
     for (int i = 0; i < size; ++i) {
-        h_input[i] = rand() % 100 - 50; // Generate random numbers between -50 and 49
-        printf("%d ",h_input[i]);
+        h_input[i] = rand() % 100 - 50; // Example: Random values between -50 and 49
     }
-    printf("\n");
 
-    // Copy data to device
-    cudaMemcpy(d_data, h_data, arraySize * sizeof(int), cudaMemcpyHostToDevice);
+    // Allocate device memory
+    int* d_input;
+    int* d_maxOut;
+    int* d_maxIdxOut;
+    cudaMalloc((void**)&d_input, size * sizeof(int));
+    cudaMalloc((void**)&d_maxOut, gridDim.x * sizeof(int));
+    cudaMalloc((void**)&d_maxIdxOut, gridDim.x * sizeof(int));
+
+    // Copy input data from host to device
+    cudaMemcpy(d_input, h_input, size * sizeof(int), cudaMemcpyHostToDevice);
 
     // Define grid and block dimensions
-    dim3 blockDim(256);
-    dim3 gridDim((arraySize + blockDim.x - 1) / blockDim.x);
+    dim3 gridDim(128); // Adjust grid size as needed
+    dim3 blockDim(32); // Adjust block size as needed
 
     // Measure execution time
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start, 0);
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    // Launch the kernel
+    //reduceMaxIdxOptimizedWarp <<<gridDim, blockDim>>> (d_input, size, d_maxOut, d_maxIdxOut);
 
-    // Launch kernel
-    reduceMaxIdxOptimizedBlocks<<<gridDim, blockDim>>>(d_data, arraySize, d_maxOut, d_maxIdxOut);
+    // Synchronize the device
+    cudaDeviceSynchronize();
 
-    // Copy results back to host
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    
+    
+    // Copy output data from device to host
     cudaMemcpy(h_maxOut, d_maxOut, gridDim.x * sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(h_maxIdxOut, d_maxIdxOut, gridDim.x * sizeof(int), cudaMemcpyDeviceToHost);
-
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    float milliseconds = 0;
-    cudaEventElapsedTime(&milliseconds, start, stop);
 
     // Find the global maximum and its index
     int globalMax = h_maxOut[0];
     int globalMaxIdx = h_maxIdxOut[0];
     for (int i = 1; i < gridDim.x; ++i) {
-        if (h_maxOut[i] > globalMax) {
+        if (globalMax < h_maxOut[i]) {
             globalMax = h_maxOut[i];
             globalMaxIdx = h_maxIdxOut[i];
         }
     }
 
-    std::cout << "Global Maximum: " << globalMax << std::endl;
-    std::cout << "Global Maximum Index: " << globalMaxIdx << std::endl;
-    std::cout << "Execution Time: " << milliseconds << " ms" << std::endl;
+    // Print the results
+    printf("Global Maximum: %d\n", globalMax);
+    printf("Global Maximum Index: %d\n", globalMaxIdx);
 
     // Free memory
-    cudaFree(d_data);
+    cudaFree(d_input);
     cudaFree(d_maxOut);
     cudaFree(d_maxIdxOut);
-    free(h_data);
-    free(h_maxOut);
-    free(h_maxIdxOut);
+    cudaFreeHost(h_input);
+    cudaFreeHost(h_maxOut);
+    cudaFreeHost(h_maxIdxOut);
 
     return 0;
 }
