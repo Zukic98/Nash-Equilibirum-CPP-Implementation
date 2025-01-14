@@ -7,8 +7,7 @@
 #include <utility>
 #include <algorithm>
 #include <chrono>
-#include <fstream>
-#define DIMENSION 3000
+#define DIMENSION 1000
 
 struct PairHash {
     template <class T1, class T2>
@@ -21,31 +20,15 @@ struct PairHash {
 
 std::unordered_set<std::pair<int, int>, PairHash> findNashEquilibirum(int *matrix1, int *matrix2, int dimension){
     
-    std::unordered_set<std::pair<int,int>,PairHash> global_best_of_column, global_best_of_row;
-    std::unordered_set<std::pair<int,int>,PairHash> intersection;
+    std::unordered_set<std::pair<int,int>,PairHash> equilibrium;
 
     for(int i=0; i < dimension; i++){
 
-        int maximumColumnValue = -std::numeric_limits<int>::max();
         int maximumRowValue = -std::numeric_limits<int>::max();
 
-        std::unordered_set<std::pair<int,int>, PairHash> best_of_column, best_of_row;
+        std::unordered_set<int> best_of_row;
 
         for(int j=0; j < dimension; j++){
-            
-            if(matrix1[j*dimension + i] > maximumColumnValue){
-                
-                best_of_column.clear();
-
-                maximumColumnValue = matrix1[j*dimension + i];
-
-                best_of_column.insert({j,i});
-
-            }else if(matrix1[j*dimension + i] == maximumColumnValue){
-                
-                best_of_column.insert({j,i});
-
-            }
 
             if(matrix2[i*dimension +j] > maximumRowValue){
                 
@@ -53,37 +36,41 @@ std::unordered_set<std::pair<int, int>, PairHash> findNashEquilibirum(int *matri
 
                 maximumRowValue = matrix2[i*dimension +j];
 
-                best_of_row.insert({i,j});
+                best_of_row.insert(j);
 
             }else if(matrix2[i*dimension +j] == maximumRowValue){
                 
-                best_of_row.insert({i,j});
+                best_of_row.insert(j);
 
             }
         }
 
-        global_best_of_column.insert(best_of_column.begin(),best_of_column.end());
-        global_best_of_row.insert(best_of_row.begin(),best_of_row.end());
+        for(auto column_index : best_of_row){
+            
+            int maximumColumnValue = -std::numeric_limits<int>::max();
+            std::unordered_set<int> best_of_column;
+
+            for(int k = 0; k < dimension; k++){
+                if(matrix1[k*dimension + column_index] > maximumColumnValue){
+                
+                    maximumColumnValue = matrix1[k*dimension + column_index];
+
+                    best_of_column.insert(k);
+
+                }       
+            }
+
+            for(auto row_index:best_of_column){
+                if(row_index == i)
+                    equilibrium.insert({row_index,column_index});
+                
+            }
+
+        }
 
     }
-    
-    if(global_best_of_column.size() > global_best_of_row.size()){
-        for (auto element : global_best_of_row) {
-            // If insertion is successful, the element exists in both sets
-            if (global_best_of_column.insert(element).second == false) {
-                intersection.insert(element);
-            }
-        }
-    }else{
-        for (auto element : global_best_of_column) {
-            // If insertion is successful, the element exists in both sets
-            if (global_best_of_row.insert(element).second == false) {
-                intersection.insert(element);
-            }
-        }
-    }
 
-    return intersection;
+    return equilibrium;
 }
 /*
 std::unordered_set<std::pair<int, int>, PairHash> getPositionsWithBiggestValues(int dimension){
@@ -154,9 +141,8 @@ void printMatrix(int *matrix, int dimension){
 }
 
 int main(){
-    std::ofstream outputFile("output.txt");
-    for(int i=500;i<=30000;i+=500){
-    int dimension(i);
+
+    int dimension(DIMENSION);
 
     srand(time(NULL));
     
@@ -178,14 +164,13 @@ int main(){
 
     std::cout<< "Execution time of Nash equilibrium: "
         <<std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-    
-    outputFile << i <<","<< double(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()) <<std::endl;    
-    /*for(auto index : equilibrium){
+
+    for(auto index : equilibrium){
         std::cout<<"i: "<<index.first<<" j:"<<index.second<<"."<<std::endl;
-    }*/
+    }
 
     delete[] matrix1;
     delete[] matrix2;
-    }
+
     return 0;
 }
