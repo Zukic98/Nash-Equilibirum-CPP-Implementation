@@ -7,7 +7,7 @@
 #include <utility>
 #include <algorithm>
 #include <chrono>
-#define DIMENSION 5000
+#define DIMENSION 10000
 
 typedef std::deque<std::deque<int>> Matrix;
 
@@ -168,11 +168,11 @@ int main(){
     
     Matrix matrix1(generateMatrix(dimension));
     std::cout<<"Matrix 1: "<<std::endl;
-    printMatrix(matrix1);
+    /*printMatrix(matrix1);*/
 
     std::cout<<"Matrix 2: "<<std::endl;
     Matrix matrix2(generateMatrix(dimension));
-    printMatrix(matrix2);
+    /*printMatrix(matrix2);*/
     
     std::cout<<"Equilibrium: "<<std::endl;
 
