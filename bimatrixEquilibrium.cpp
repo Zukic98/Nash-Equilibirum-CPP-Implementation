@@ -1,9 +1,5 @@
 #include <algorithm>
 #include <chrono>
-<<<<<<< HEAD
-#include <fstream>
-#define DIMENSION 3000
-=======
 #include <ctime>
 #include <deque>
 #include <iomanip>
@@ -12,7 +8,6 @@
 #include <unordered_set>
 #include <utility>
 #define DIMENSION 5000
->>>>>>> f022126c41fca719d88f25191a8f3dd1efee2629
 
 struct PairHash {
   template <class T1, class T2>
@@ -160,16 +155,9 @@ void printMatrix(int *matrix, int dimension) {
   }
 }
 
-<<<<<<< HEAD
-int main(){
-    std::ofstream outputFile("output.txt");
-    for(int i=500;i<=30000;i+=500){
-    int dimension(i);
-=======
 int main() {
 
   int dimension(DIMENSION);
->>>>>>> f022126c41fca719d88f25191a8f3dd1efee2629
 
   srand(time(NULL));
 
@@ -185,20 +173,6 @@ int main() {
 
   auto start = std::chrono::high_resolution_clock::now();
 
-<<<<<<< HEAD
-    std::cout<< "Execution time of Nash equilibrium: "
-        <<std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-    
-    outputFile << i <<","<< double(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()) <<std::endl;    
-    /*for(auto index : equilibrium){
-        std::cout<<"i: "<<index.first<<" j:"<<index.second<<"."<<std::endl;
-    }*/
-
-    delete[] matrix1;
-    delete[] matrix2;
-    }
-    return 0;
-=======
   auto equilibrium(findNashEquilibirum(matrix1, matrix2, dimension));
 
   auto end = std::chrono::high_resolution_clock::now();
@@ -218,5 +192,4 @@ int main() {
   delete[] matrix2;
 
   return 0;
->>>>>>> f022126c41fca719d88f25191a8f3dd1efee2629
 }
