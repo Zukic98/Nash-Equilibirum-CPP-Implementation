@@ -1,13 +1,14 @@
 #include <algorithm>
 #include <chrono>
-#include <ctime>
-#include <deque>
-#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <unordered_set>
 #include <utility>
-#define DIMENSION 5000
+#include <iomanip>
+#include <cstdint>
+#include <fstream>
+
+#define DIMENSION 8000
 
 struct PairHash {
   template <class T1, class T2>
@@ -18,19 +19,19 @@ struct PairHash {
   }
 };
 
-std::unordered_set<std::pair<int, int>, PairHash>
-findNashEquilibirum(int *matrix1, int *matrix2, int dimension) {
+std::unordered_set<std::pair<short, short>, PairHash>
+findNashEquilibirum(char *matrix1, char *matrix2, int dimension) {
 
-  std::unordered_set<std::pair<int, int>, PairHash> global_best_of_column,
+  std::unordered_set<std::pair<short, short>, PairHash> global_best_of_column,
       global_best_of_row;
-  std::unordered_set<std::pair<int, int>, PairHash> intersection;
+  std::unordered_set<std::pair<short, short>, PairHash> intersection;
 
   for (int i = 0; i < dimension; i++) {
 
-    int maximumColumnValue = -std::numeric_limits<int>::max();
-    int maximumRowValue = -std::numeric_limits<int>::max();
+    int maximumColumnValue = -std::numeric_limits<char>::max();
+    int maximumRowValue = -std::numeric_limits<char>::max();
 
-    std::unordered_set<std::pair<int, int>, PairHash> best_of_column,
+    std::unordered_set<std::pair<short, short>, PairHash> best_of_column,
         best_of_row;
 
     for (int j = 0; j < dimension; j++) {
@@ -119,12 +120,12 @@ PairHash> &indices){
     return false;
 }*/
 
-int *generateMatrix(int dimension) {
+char *generateMatrix(int dimension) {
 
-  int *matrix = nullptr;
+  char *matrix = nullptr;
 
   try {
-    matrix = new int[dimension * dimension];
+    matrix = new char[dimension * dimension];
   } catch (std::bad_alloc) {
     std::cout << "Alokacija pala";
     delete[] matrix;
@@ -132,7 +133,7 @@ int *generateMatrix(int dimension) {
   }
   // Define the minimum and maximum values for the random number range
   int min_value = 0;
-  int max_value = 100;
+  int max_value = 50;
 
   // indicesOfEquilibirum(getPositionsWithBiggestValues(dimension));
 
@@ -144,33 +145,57 @@ int *generateMatrix(int dimension) {
   return matrix;
 }
 
-void printMatrix(int *matrix, int dimension) {
+void printMatrix(short *matrix, int dimension) {
 
   for (int i = 0; i < dimension; i++) {
 
     for (int j = 0; j < dimension; j++)
-      std::cout << std::setw(3) << matrix[i * dimension + j] << " ";
+      std::cout << std::setw(3) << static_cast<int>(matrix[i * dimension + j]) << " ";
 
     std::cout << std::endl;
   }
 }
 
 int main() {
-
+  
   int dimension(DIMENSION);
 
+  std::ofstream outputFile("output.txt");
+
+  for(int i=500;i<=35000;i+=500){
+      
+  dimension = i;
   srand(time(NULL));
 
-  int *matrix1(generateMatrix(dimension));
+  char *matrix1(generateMatrix(dimension));
   /*std::cout << "Matrix 1: " << std::endl;*/
-  // printMatrix(matrix1,dimension);
+  //printMatrix(matrix1,dimension);
 
-  int *matrix2(generateMatrix(dimension));
+  char *matrix2(generateMatrix(dimension));
   /*std::cout << "Matrix 2: " << std::endl;*/
-  // printMatrix(matrix2,dimension);
+  //printMatrix(matrix2,dimension);
 
   /*std::cout << "Equilibrium: " << std::endl;*/
 
+  for(int i=0;i<dimension;i++){
+      for(int j=0;j<dimension;j++){
+          if(i == j){
+              matrix1[i*dimension+j] =100;
+              matrix2[i*dimension+j] = 100;
+          }
+          if(i == j && j+1 != dimension){
+              matrix1[i*dimension+j+1] = 100;
+              matrix2[i*dimension+j+1] = 100;
+          }
+          if(i == j && j + 2 != dimension){
+              matrix1[i*dimension+j+2] = 100;
+              matrix2[i*dimension+j+2] = 100;
+          }
+          //std::cout<<matrix1[i*dimension+j]<<" ";
+      }
+      //std::cout<<std::endl;
+  }
+  
   auto start = std::chrono::high_resolution_clock::now();
 
   auto equilibrium(findNashEquilibirum(matrix1, matrix2, dimension));
@@ -183,13 +208,16 @@ int main() {
                                                                      start)
                    .count()
             << " ms" << std::endl;
-
+  std::cout<<"Number of Nash equilibria: "<<equilibrium.size()<<".";
   /*for(auto index : equilibrium){
-      std::cout<<"i: "<<index.first<<" j:"<<index.second<<"."<<std::endl;
+      std::cout<<"i: "<<static_cast<int>(index.first)<<" j:"<<static_cast<int>(index.second)<<"."<<std::endl;
   }*/
 
   delete[] matrix1;
   delete[] matrix2;
-
+  outputFile<< i << "," << std::chrono::duration_cast<std::chrono::milliseconds>(end -
+                                                                     start)
+                   .count() << std::endl;
+  }
   return 0;
 }
