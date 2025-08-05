@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build SFML App (Sequential Nash) Linux",
+            "type": "shell",
+            // SVE KOMANDE I ARGUMENTI IDU OVDJE KAO JEDAN STRING
+            "command": "mkdir -p bin && g++ -g src/main.cpp src/Geometry.cpp src/MovingObstacle.cpp src/SequentialNashSolver.cpp -o bin/app_sequential -Iinclude -I/usr/include/SFML -L/usr/lib -lsfml-graphics -lsfml-window -lsfml-system -std=c++17 -Wall -O2",
+            "args": [], // <-- OVO MORA BITI PRAZNO ILI GA UKLONITE!
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Builds the SFML application with sequential Nash solver for Linux"
+        }
+    ]
+}

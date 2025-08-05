@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <fstream>
 
-#define DIMENSION 8000
+#define DIMENSION 2000
 
 struct PairHash {
   template <class T1, class T2>
